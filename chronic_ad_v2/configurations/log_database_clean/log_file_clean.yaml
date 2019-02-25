@@ -1,0 +1,8 @@
+# Timezone (Used for time related conversion)
+tz: Asia/Singapore
+datetime_standard_format: '%Y-%m-%d %H:%M:%S'
+folders:
+ - /home/hdfsf10n/apps/chronic_ad/logs/
+ - /home/hdfsf10n/apps/chronic_ad_weekly/logs/
+ - /home/hdfsf10n/apps/chronic_ad_v2/logs/
+log_expiry_in_days: 50

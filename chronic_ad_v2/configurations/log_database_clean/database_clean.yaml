@@ -1,0 +1,23 @@
+# Timezone (Used for time related conversion)
+tz: Asia/Singapore
+datetime_standard_format: '%Y-%m-%d %H:%M:%S'
+
+MSSQL:
+  database: F10DS_SOLUTION
+  server: FSWSQL165\FSMSSPROD165
+  user: mssqlf10n
+  password: TWljcm9uMTIz
+  port: 1433
+
+tables:
+  ad_v2_tracking: query_session
+  ad_v2_samples: query_session
+  ad_v2_as_staging_tracking: query_session
+  ad_v2_as_staging_samples: query_session
+  ad_v2t_tracking: query_session
+  ad_v2t_samples: query_session
+  ad_v2t_as_staging_tracking: query_session
+  ad_v2t_as_staging_samples: query_session
+
+log_expiry_in_days: 50
+

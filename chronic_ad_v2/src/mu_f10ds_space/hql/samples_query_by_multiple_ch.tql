@@ -1,0 +1,116 @@
+select
+    {fab} as fab,
+    ch_def.cf_value_11 as module,
+    from_unixtime(unix_timestamp(sc.sample_date)) as sample_date,
+    sc.sample_id,
+    sc.ch_id,
+    sc.ckc_id,
+    sc.limit_enable,
+    sc.ext_ewma_mv,
+    sc.ext_ewma_mv_ucl,
+    sc.ext_ewma_mv_lcl,
+    sc.ext_sigma_ucl,
+    sc.ext_sigma_lcl,
+    sc.ext_range_ucl,
+    sc.ext_range_lcl,
+    sc.ext_mv_ucl,
+    sc.ext_mv_lcl,
+    sample_info.exval_01 as design_id,
+    sample_info.exval_04 as measurement_step,
+    sample_info.exval_06 as process_step,
+    sample_info.exval_12 as lot_id,
+    sample_info.daval_03 as wafer_id,
+    sample_info.parameter_name as parameter_name,
+    sample_info.ext_mv as ext_mv,
+    sample_info.ext_sigma as ext_sigma,
+    sample_info.ext_min as ext_min,
+    sample_info.ext_max as ext_max,
+    channel_def.cf_value_09 as col_type,
+    channel_def.cf_value_10 as channel_type
+
+from (select
+   sample_date,
+   sample_id,
+   ch_id,
+   ckc_id,
+   limit_enable,
+   max(sys_tt_upd_ts) as sys_tt_upd_ts,
+   avg(ext_ewma_mv) as ext_ewma_mv,
+   avg(ext_ewma_mv_ucl) as ext_ewma_mv_ucl,
+   avg(ext_ewma_mv_lcl) as ext_ewma_mv_lcl,
+   avg(ext_sigma_ucl) as ext_sigma_ucl,
+   avg(ext_sigma_lcl) as ext_sigma_lcl,
+   avg(ext_range_ucl) as ext_range_ucl,
+   avg(ext_range_lcl) as ext_range_lcl,
+   avg(ext_mv_ucl) as ext_mv_ucl,
+   avg(ext_mv_lcl) as ext_mv_lcl
+
+from prod_mti_{region}_fab_{fab}_spc_dm.samples_calc
+where
+    {year_month_partition_str}
+    and sample_date <= '{end_date}'
+    and sample_date >= '{start_date}'
+    and ({ch_ckc_condition_list})
+group by sample_date, sample_id, ch_id, ckc_id, limit_enable) sc
+
+inner join
+
+(select
+    exval_01, --DESIGN_ID
+    exval_04, --OOC STEP
+    exval_06, --PROCESS STEP
+    sample_id, --SAMPLE ID
+    sample_date, --SAMPLE DATE
+    daval_08, -- SAMPLE DATE
+    exval_12, -- LOT ID
+    daval_03, -- WAFER ID
+    parameter_name, -- PARAMETER
+    avg(ext_mv) as ext_mv,
+    avg(ext_sigma) as ext_sigma,
+    avg(ext_min) as ext_min,
+    avg(ext_max) as ext_max,
+    max(sys_tt_upd_ts) --UPDATE DATETIME
+from prod_mti_{region}_fab_{fab}_spc_dm.t_ext_samples_wafer
+where {year_month_partition_str}
+      and sample_date <= '{end_date}'
+      and sample_date >= '{start_date}'
+group by exval_01, exval_04, exval_06, sample_id, sample_date, daval_08, exval_12, daval_03, parameter_name
+
+union all
+
+select
+    exval_01, --DESIGN_ID
+    exval_04, --OOC STEP
+    exval_06, --PROCESS STEP
+    sample_id, --SAMPLE ID
+    sample_date, --SAMPLE DATE
+    daval_08, -- SAMPLE DATE
+    exval_12, -- LOT ID
+    daval_03, -- WAFER ID
+    parameter_name, -- PARAMETER
+    avg(ext_mv) as ext_mv,
+    avg(ext_sigma) as ext_sigma,
+    avg(ext_min) as ext_min,
+    avg(ext_max) as ext_max,
+    max(sys_tt_upd_ts) --UPDATE DATETIME
+from prod_mti_{region}_fab_{fab}_spc_dm.t_ext_samples_lot
+where
+      {year_month_partition_str}
+    and sample_date <= '{end_date}'
+    and sample_date >= '{start_date}'
+group by exval_01, exval_04, exval_06, sample_id, sample_date, daval_08, exval_12, daval_03, parameter_name) sample_info
+
+on sc.sample_id = sample_info.sample_id
+
+inner join (
+SELECT
+      ch_id,
+      max(struct(sys_tt_upd_ts, cf_value_09, cf_value_10, cf_value_11, ch_id)).sys_tt_upd_ts as max_date,
+      max(struct(sys_tt_upd_ts, cf_value_09, cf_value_10, cf_value_11, ch_id)).cf_value_09 as cf_value_09,
+      max(struct(sys_tt_upd_ts, cf_value_09, cf_value_10, cf_value_11, ch_id)).cf_value_10 as cf_value_10,
+      max(struct(sys_tt_upd_ts, cf_value_09, cf_value_10, cf_value_11, ch_id)).cf_value_11 as cf_value_11
+    FROM prod_mti_{region}_fab_{fab}_spc_dm.t_channel_def
+    GROUP BY ch_id) channel_def
+
+on channel_def.ch_id = sc.ch_id
+order by sc.ch_id, sc.ckc_id, sc.sample_date

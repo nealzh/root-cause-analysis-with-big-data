@@ -1,0 +1,21 @@
+# Timezone (Used for time related conversion)
+tz: Asia/Singapore
+datetime_standard_format: '%Y-%m-%d %H:%M:%S'
+folders:
+ - /data/rda_ad_result/
+ - /data/rda_ad_result/data/
+ - /data/rda_ad_result/ad_hoc/
+ - /data/rda_ad_result/ad_hoc/report/
+ - /data/rda_ad_result/ad_hoc/data/
+ - /data/chronic_ad_result/ad_hoc/
+ - /data/chronic_ad_result/data/
+ - /data/chronic_ad_result/
+ - /data/weekly_rda_ad_result/
+ - /data/weekly_rda_ad_result/data/
+ - /data/weekly_rda_ad_result/ad_hoc/
+ - /data/ad_result_ad_hoc/*/data/
+ - /data/ad_result_ad_hoc/*/report/
+ - /data/ad_result/*/data/
+ - /data/ad_result/*/report/
+
+log_expiry_in_days: 50
