@@ -1,0 +1,24 @@
+select *
+FROM (
+    SELECT *FROM (
+        SELECT
+        RTRIM(LTRIM(E.equip_id)) AS equip_id
+        , RTRIM(LTRIM(MFG_AREA.mfg_area_id)) AS mfg_area_id
+        , RTRIM(LTRIM(ESFA.semi_state_id)) AS semi_state_id
+        , RTRIM(LTRIM(ESFA.equip_state_id)) AS equip_state_id
+        , RTRIM(LTRIM(ECH.event_code_id)) AS event_code_id
+        , EH.equip_state_in_datetime
+        , EH.equip_state_out_datetime
+        , EH.mod_dt AS event_hist_mod_dt
+        , CASE WHEN TRANSLATE_CHK(EN.event_note_text USING Unicode_TO_Latin) = 0 then oreplace(RTRIM(LTRIM(EN.event_note_text)),',',';') else 'TEST' end AS event_note_text
+        ,'${end_time}' as hive_load_datetime_gmt
+        FROM WW_MFG_IDS_DM.ET_EVENT_HISTORY EH
+        INNER JOIN WW_MFG_IDS_DM.ET_EQUIPMENT E ON EH.equip_OID=E.equip_OID
+        LEFT OUTER JOIN (SELECT * FROM WW_MFG_IDS_DM.ET_EQUIPMENT_state_for_area WHERE dwh_srcID='FAB ${fab}') ESFA ON EH.equip_state_OID=ESFA.equip_state_OID
+        LEFT OUTER JOIN (SELECT * FROM WW_MFG_IDS_DM.REF_MFG_AREA WHERE dwh_srcID='FAB ${fab}') MFG_AREA ON ESFA.mfg_area_OID=MFG_AREA.mfg_area_OID
+        LEFT OUTER JOIN (SELECT * FROM WW_MFG_IDS_DM.ET_EVENT_CODE_HISTORY WHERE dwh_srcID='FAB ${fab}') ECH ON EH.production_state_change_OID=ECH.production_state_change_OID
+        LEFT OUTER JOIN (SELECT * FROM WW_MFG_IDS_DM.ET_EVENT_NOTE WHERE dwh_srcID='FAB ${fab}') EN ON EH.production_state_change_OID=EN.production_state_change_OID
+        WHERE EH.mod_dt > '${start_time}' AND EH.mod_dt <= '${end_time}'
+        AND EH.dwh_srcID='FAB ${fab}' AND E.dwh_srcID='FAB ${fab}'
+    ) AS t2
+)t1
