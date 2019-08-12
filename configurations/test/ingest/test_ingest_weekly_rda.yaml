@@ -1,0 +1,62 @@
+# Timezone (Used for time related conversion)
+tz: Asia/Singapore
+analysis_type: weekly_rda
+datetime_standard_format: '%Y-%m-%d %H:%M:%S'
+log_relative_dir: "../logs"
+
+SPARK:
+  spark.executor.memory: 4g
+  spark.executor.instances: '50'
+  spark.driver.memory: 6g
+  spark.yarn.queue: eng_f10w-01
+  spark.yarn.principal: hdfsf10n@NA.MICRON.COM
+  spark.yarn.keytab: /home/hdfsf10n/.keytab/hdfsf10n.keytab
+  spark.app.name: SPC_RDA_AD_Daily_OOC_Query_pengtan
+  spark.master: yarn
+
+MSSQL:
+  # Tracking table for AD
+  tracking_table_name: ad_v2t_tracking
+  # Staging table for AD Tracking
+  tracking_staging_table_name: ad_v2t_as_staging_tracking
+  # Samples table for AD
+  sample_table_name: ad_v2t_samples
+  # Staging table for AD Samples
+  sample_staging_table_name: ad_v2t_as_staging_samples
+  ch_folder_table_name: ad_v2_ch_folder
+  # database used
+  database: F10DS_SOLUTION
+  # Hostname
+  server: FSWSQL165\FSMSSPROD165
+  # user name for mssql (need to write permission)
+  user: mssqlf10n
+  password: TWljcm9uMTIz
+  port: 1433
+
+FILTER:
+  query_ooc_only_flag: no
+  # This is designed to handle min 1 OOC in last 24 hours
+  ooc_sample_latest_check_in_hours: 168
+  latest_ooc_min_count: 2
+  # This is designed to handle min 2 OOCS in 3 days
+  ooc_sample_num_check_in_hours: 168
+  #  min_ooc_count: 2
+  # Total query period, eg, 30 days
+  space_sample_period_in_hours: 720
+  # Used if multiple sessions to go in one run
+  query_interval_in_seconds: 604800
+  # Cutoff hour, for example, if 21 is specified, 2018/12/16 21:00:00 to 2018/12/17 21:00:00 is used
+  # instead of 2018/12/16 00:00:00 to 2018/12/17 00:00:00
+  # put -1 if not enabled
+  cutoff_hour: 21
+  # violation type list
+  #
+  vio_type_list_csv:  3,4,5,6,11,12,17,18
+  buffer_seconds: 10800
+  area: ['RDA']
+  folder: ['AD']
+
+
+
+
+
